@@ -15,7 +15,7 @@ import com.niit.model.UserDetails;
 
 public class UserTestCase {
 
-	static UserDAO userDAO;
+	/*static UserDAO userDAO;
 
 	@BeforeClass
 	public static void executeFirst()
@@ -28,7 +28,7 @@ public class UserTestCase {
 		userDAO=(UserDAO)context.getBean("userDAO");
 	}
 	
-	//@Ignore
+	@Ignore
 	@Test
 	public void addUserTest()
 	{
@@ -81,6 +81,6 @@ public class UserTestCase {
 			
 		}
 	}
-
+*/
 }
 

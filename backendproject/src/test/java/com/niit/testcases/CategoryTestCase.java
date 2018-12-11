@@ -14,7 +14,7 @@ import com.niit.model.Category;
 
 public class CategoryTestCase {
 
-	
+	/*
 	static CategoryDAO categoryDAO;
 
 	@BeforeClass
@@ -47,7 +47,7 @@ public class CategoryTestCase {
 		category.setCategoryDesc("");	
 		assertTrue("Problem in Updating the Category",categoryDAO.update(category));
 	}
-	//@Ignore
+	@Ignore
 	@Test
 	public void deleteCategoryTest()
 	{
@@ -70,5 +70,5 @@ public class CategoryTestCase {
 		}
 	}
 
-	
+	*/
 }

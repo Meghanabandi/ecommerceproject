@@ -14,7 +14,7 @@ import com.niit.model.Product;
 
 public class ProductTestCase {
 
-	static ProductDAO productDAO;
+/*	static ProductDAO productDAO;
 
 	@BeforeClass
 	public static void executeFirst()
@@ -52,7 +52,7 @@ public class ProductTestCase {
 		
 		assertTrue("Problem in Updating the Product",productDAO.update(product));
 	}
-	//@Ignore
+	@Ignore
 	@Test
 	public void deleteProductTest()
 	{
@@ -77,7 +77,7 @@ public class ProductTestCase {
 		}
 	}
 
-	
+	*/
 }
 
 

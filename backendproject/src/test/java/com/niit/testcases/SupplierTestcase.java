@@ -14,7 +14,7 @@ import com.niit.model.Supplier;
 
 public class SupplierTestcase {
 
-	static SupplierDAO supplierDAO;
+/*	static SupplierDAO supplierDAO;
 
 	@BeforeClass
 	public static void executeFirst()
@@ -38,7 +38,7 @@ public class SupplierTestcase {
 		assertTrue("Probem in Adding the Supplier",supplierDAO.save(supplier));
 	}
 	
-	//@Ignore
+	@Ignore
 	@Test
 	public void updateSupplierTest()
 	{	
@@ -68,6 +68,6 @@ public class SupplierTestcase {
 			System.out.println("   Supplier Desc:"+supplier.getSupplierAddress());
 		}
 	}
-
+*/
 }
 

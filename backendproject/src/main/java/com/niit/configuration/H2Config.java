@@ -15,7 +15,9 @@ import org.springframework.orm.hibernate5.LocalSessionFactoryBuilder;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.niit.model.Category;
+import com.niit.model.Product;
 import com.niit.model.Supplier;
+import com.niit.model.UserDetails;
 
 @Configuration
 @ComponentScan("com.niit")
@@ -59,7 +61,11 @@ public class H2Config
 		sessionBuilder.addProperties(getHibernateProperties());
 
 		sessionBuilder.addAnnotatedClass(Category.class);
-
+		sessionBuilder.addAnnotatedClass(Supplier.class);
+		sessionBuilder.addAnnotatedClass(Product.class);
+		sessionBuilder.addAnnotatedClass(UserDetails.class);
+		
+		
 		sessionBuilder.scanPackages("com.niit");
 
 		return sessionBuilder.buildSessionFactory();

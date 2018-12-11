@@ -1,4 +1,5 @@
 com\niit\testcases\SupplierTestcase.class
 com\niit\testcases\CategoryTestCase.class
+com\niit\testcases\UserTestCase.class
 com\niit\backendproject\AppTest.class
 com\niit\testcases\ProductTestCase.class
