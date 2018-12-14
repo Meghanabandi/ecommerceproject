@@ -47,7 +47,9 @@ public class H2config{
 		
 		properties.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
 		properties.put("hibernate.show_sql", "true");
-		
+		properties.put("hibernate.format_sql", "true");
+		properties.put("hibernate.hbm2ddl.auto", "update");
+			
 		return properties;
 	}
 

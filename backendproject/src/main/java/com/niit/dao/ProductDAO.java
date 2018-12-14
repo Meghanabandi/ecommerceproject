@@ -10,7 +10,7 @@ public boolean save(Product product);
 	public boolean delete(Product product);
 	public boolean update(Product product);
 	public List<Product> listProducts();
-	public Product getProduct(Product product);
+	public Product getProduct(int productId);
 
 
 
