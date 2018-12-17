@@ -30,10 +30,9 @@ public class HomeController {
 	@Autowired
 	private HttpSession httpSession;
 	
-	private static String imageDirectory = "C:\\Users\\NIIT\\git\\ecommerceproject\\Ecommercefrontend\\src\\main\\webapp\\resources\\images\\";
+ private static String imageDirectory = "C:\\Users\\NIIT\\git\\ecommerceproject\\Ecommercefrontend\\src\\main\\webapp\\resources\\images";
 
 	
-	// http://localhost:8080/ShoppingCartFrontEnd/
 	@GetMapping("/")
 	public ModelAndView home(HttpServletRequest request) {
 
@@ -69,17 +68,9 @@ public class HomeController {
 	@GetMapping("/logout")
 	public ModelAndView logout()
 	{
-		//at the time of login, we add user id in http session
-		//at the time of logout, we need to remove usre id from http session.
 		ModelAndView mv = new ModelAndView("home");
 		
-		//we were not able to see menu items after logout
-		//will modify this code.
 		httpSession.invalidate();
-		
-		/*httpSession.removeAttribute("loggedInUserID");
-		httpSession.removeAttribute("isLoggedIn");
-		httpSession.removeAttribute("isAdmin");*/
 		
 		mv.addObject("logoutMessage", "You are successfully logged out");
 		return mv;

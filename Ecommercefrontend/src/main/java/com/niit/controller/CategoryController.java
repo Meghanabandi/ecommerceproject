@@ -36,19 +36,6 @@ public class CategoryController {
 	@Autowired
 	HttpSession httpSession;
 
-	// http://localhost:8080/shoppingcart/category/get/cate_001
-	// @GetMapping("/category/get/{id}")
-	/*@RequestMapping(name = "/category/get/", method = RequestMethod.GET)
-	public ModelAndView getCategory(@RequestParam String id) {
-		// based on id, fetch the details from categoryDAO
-		category = categoryDAO.get(id);
-
-		// navigate to home page
-		ModelAndView mv = new ModelAndView("home");
-		mv.addObject("category", category);
-		return mv;
-
-	}*/
 
 	@PostMapping("/category/save/")
 	/*
@@ -133,16 +120,7 @@ public class CategoryController {
 		mv.addObject("categories", categories);
 		return mv;
 	}
-	/*
-	 * @GetMapping("/category/edit") public ModelAndView editCategory(@RequestParam
-	 * String id) { ModelAndView mv = new
-	 * ModelAndView("redirect:/managecategories");
-	 * 
-	 * category = categoryDAO.get(id);
-	 * 
-	 * httpSession.setAttribute("category", category); return mv;
-	 * 
-	 * }
-	 */
+	
+
 
 }
