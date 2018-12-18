@@ -101,9 +101,10 @@
 		</dependency>
 
 <dependency>
-<groupId>com.niit</groupId>
+ <groupId>com.niit</groupId>
   <artifactId>Ecommercebackend</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
+ 
 </dependency>
 
     

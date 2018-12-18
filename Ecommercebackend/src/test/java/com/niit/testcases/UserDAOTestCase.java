@@ -16,7 +16,7 @@ import com.niit.model.User;
 
 public class UserDAOTestCase {
 
-	/*private static AnnotationConfigApplicationContext context;
+	private static AnnotationConfigApplicationContext context;
 	
 	@Autowired
 	private static UserDAO userDAO;
@@ -46,10 +46,10 @@ public class UserDAOTestCase {
 	public void saveUserTestCase()
 	{
 		user = new User();
-		user.setEmailID("kiran@gmail.com");
-		user.setMobile("444444444");
-		user.setName("kiran kumar");
-		user.setPwd("kiran@123");
+		user.setEmailID("meghana@gmail.com");
+		user.setMobile("9848660750");
+		user.setName("Meghana");
+		user.setPwd("meghana@123");
 		
 	  boolean status = 	userDAO.save(user);
 	  
@@ -61,7 +61,7 @@ public class UserDAOTestCase {
 	@Test
 	public void updateUserTestCase()
 	{
-		user.setEmailID("jaskaran1@gmail.com");
+		user.setEmailID("meghana@gmail.com");
 		user.setMobile("888888888");
 		boolean status = userDAO.update(user);
 		assertEquals("update test case", true,status );
@@ -72,7 +72,7 @@ public class UserDAOTestCase {
 	public void getUserSuccessTestCase()
 	{
 		
-	user= userDAO.get("jaskaran1@gmail.com");
+	user= userDAO.get("meghana@gmail.com");
 	
 	assertNotNull("get user test case", user);
 	}
@@ -83,7 +83,7 @@ public class UserDAOTestCase {
 	public void getUserFailureTestCase()
 	{
 		
-	user= userDAO.get("jaya@gmail.com");
+	user= userDAO.get("meghana@gmail.com");
 	
 	assertNull("get user test case", user);
 	}
@@ -93,7 +93,7 @@ public class UserDAOTestCase {
 	@Test
 	public void deleteUserSuccessTestCase()
 	{
-	boolean status =	userDAO.delete("jaskaran1@gmail.com");
+	boolean status =	userDAO.delete("meghana@gmail.com");
 	assertEquals("delete user succss test case" , true, status);
 	
 	}
@@ -102,7 +102,7 @@ public class UserDAOTestCase {
 	@Test
 	public void deleteUserFailureTestCase()
 	{
-	boolean status =	userDAO.delete("arpith@gmail.com");
+	boolean status =	userDAO.delete("meghana@gmail.com");
 	assertEquals("delete user failure test case" , false, status);
 	
 	}
@@ -122,12 +122,10 @@ public class UserDAOTestCase {
 	@Test
 	public void validateCredentailsTestCase()
 	{
-	user = 	userDAO.validate("jaskaran@gmail.com", "jas@1234");
+	user = 	userDAO.validate("meghana@gmail.com", "meghana@123");
 	assertNotNull("Validate test case",user );
 	
 	}
-	
-	*/
 	
 	
 	

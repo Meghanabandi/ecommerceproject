@@ -15,7 +15,7 @@ import com.niit.model.Supplier;
 
 public class SupplierDAOTestCase {
 
-	/*private static AnnotationConfigApplicationContext context;
+	private static AnnotationConfigApplicationContext context;
 	
 	@Autowired
 	private static SupplierDAO supplierDAO;
@@ -39,13 +39,14 @@ public class SupplierDAOTestCase {
 		supplierDAO = (SupplierDAO)context.getBean("supplierDAO");
 		supplier = (Supplier)context.getBean("supplier");
 	}
+	@Ignore
 	@Test
 	public void saveSupplierTestCase()
 	{
 		supplier = new Supplier();
 		supplier.setId("SUP-001");
 		supplier.setName("BigC");
-		supplier.setAddress("NH33 , Chennai");
+		supplier.setAddress("6-19-2 Hyd ");
 		
 	  boolean status = 	supplierDAO.save(supplier);
 	  
@@ -113,9 +114,6 @@ public class SupplierDAOTestCase {
 	
 	}
 	
-	
-	
-	*/
 	
 	
 	
