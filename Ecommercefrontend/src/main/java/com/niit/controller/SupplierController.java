@@ -4,126 +4,136 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.niit.dao.ProductDAO;
 import com.niit.dao.SupplierDAO;
+import com.niit.model.Product;
 import com.niit.model.Supplier;
+
+
 
 @Controller
 public class SupplierController {
-	
 
-
-
-	// we need to call CategoryDAO methods
-	// get,save,update,delete,list
-
-	// 1. inject the CategoryDAO and Category
-	@Autowired
-	private SupplierDAO supplierDAO;
+	private static Logger log = LoggerFactory.getLogger(SupplierController.class);
 
 	@Autowired
-	private Supplier supplier;
-
+	HttpSession session;
 	@Autowired
-	HttpSession httpSession;
+	SupplierDAO supplierDAO;
+	@Autowired
+	Supplier supplier;
+	@Autowired
+	ProductDAO productDAO;
+	@Autowired
+	Product product;
 
+	@RequestMapping("/manage-supplier-add")
+	public ModelAndView createSupplier(@RequestParam("sId") String id, @RequestParam("sName") String name,
+			@RequestParam("sAddress") String address) {
+		ModelAndView mv = new ModelAndView("Home");
 
-	/*@RequestMapping(name = "/getSupplier/", method = RequestMethod.GET)
-	public ModelAndView getSupplier(@RequestParam String id) {
-		// based on id, fetch the details from categoryDAO
-		supplier = supplierDAO.get(id);
-
-		// navigate to home page
-		ModelAndView mv = new ModelAndView("home");
-		mv.addObject("supplier", supplier);
-		return mv;
-
-	}*/
-
-	@PostMapping("/supplier/save/")
-
-	public ModelAndView saveSupplier(@RequestParam("id") String id,
-			@RequestParam("name") String name,
-			@RequestParam("address") String address) {
-System.out.println("saveSupplier method is calling");
-		ModelAndView mv = new ModelAndView("redirect:/managesuppliers");
 		supplier.setId(id);
 		supplier.setName(name);
 		supplier.setAddress(address);
-		if (supplierDAO.save(supplier)) {
-			mv.addObject("supplierSuccessMessage", "The supplier created successfully");
+
+		mv.addObject("isAdminClickedSuppliers", "true");
+		mv.addObject("isAdmin", "true");
+		session.setAttribute("isUserLoggedIn", "false");
+
+		if (supplierDAO.getSupplierById(id) != null) {
+			mv.addObject("sMessage", "Supplier already exists with id : " + id);
+			return mv;
 		} else {
-			mv.addObject("supplierErrorMessage", "Coulc not able to create supplier.  please contact admin");
+			supplierDAO.save(supplier);
+			mv.addObject("sMessage", "Supplier creation success with id : " + id);
+
 		}
+
+		List<Supplier> supplierList = supplierDAO.list();
+		session.setAttribute("supplierList", supplierList);
+		session.setAttribute("supplier", supplier);
+
+		log.debug("Ending of create supplier");
 		return mv;
 
 	}
 
-	@PutMapping("/supplier/update/")
-	public ModelAndView updateSupplier(@ModelAttribute Supplier supplier) {
-		// navigate to home page
-		ModelAndView mv = new ModelAndView("home");
+	@RequestMapping("/manage-supplier-delete/{id}")
+	public ModelAndView deleteSupplier(@PathVariable("id") String id) {
 
-		
-		if (supplierDAO.update(supplier) == true) {
-			// add success message
-			mv.addObject("successMessage", "The supplier updated successfully");
-		} else {
-			// add failure message
-			mv.addObject("errorMessage", "Could not update the supplier.");
+		log.debug("Starting of delete Supplier");
+		log.info("You are about to delete a supplier with id : " + id);
 
+		ModelAndView mv = new ModelAndView("redirect:/manageSuppliers");
+
+		int noOfProducts = productDAO.getAllProductsBySupplierId(id).size();
+		if (noOfProducts != 0) {
+			log.debug("Few products are there by this seller, you cannot delete!");
+			session.setAttribute("supplierMessage", "There are " + noOfProducts + " products under this " + id + " seller, you cannot delete!");
+			return mv;
 		}
-		return mv;
-
-	}
-
-	@GetMapping("/supplier/delete/")
-	public ModelAndView deleteSupplier(@RequestParam String id) {
-		// navigate to home page
-		ModelAndView mv = new ModelAndView("redirect:/managesuppliers");
-		// we supposed to fetch the latest categories
-		// and add to httpSession
-	
 		if (supplierDAO.delete(id) == true) {
-			// add success message
-			mv.addObject("supplierSuccessMessage", "The supplier deleted successfully");
-
+			mv.addObject("message", "Successfullly deleted");
 		} else {
-			// add failure message
-			mv.addObject("supplierErrorMessage", "Could not delete the supplier.");
+			mv.addObject("message", "Failed to delete");
+		}
+		log.debug("Ending of delete Supplier");
+
+		return mv;
+	}
+
+	@RequestMapping("/manage-supplier-edit/{id}")
+	public ModelAndView editSupplier(@PathVariable("id") String id) {
+		log.debug("Starting of editSupplier");
+		log.info("You are about to edit a supplier with id : " + id);
+
+		supplier = supplierDAO.getSupplierById(id);
+
+		ModelAndView mv = new ModelAndView("redirect:/manageSuppliers");
+		mv.addObject("selectedSupplier", supplier);
+		session.setAttribute("selectedSupplier", supplier);
+		session.setAttribute("isAdminClickedManageSupplierEdit", "true");
+
+		log.debug("Ending of editSupplier");
+
+		return mv;
+	}
+
+	@RequestMapping("/manage-supplier-update")
+	public ModelAndView updateSupplier(@RequestParam("cId") String id, @RequestParam("cName") String name,
+			@RequestParam("cAddress") String address) {
+		log.debug("Starting of updateSupplier");
+		ModelAndView mv = new ModelAndView("redirect:/manageSuppliers");
+		session.setAttribute("isAdminClickedManageSupplierEdit", "false");
+
+		supplier.setId(id);
+		supplier.setName(name);
+		supplier.setAddress(address);
+
+		mv.addObject("isAdminClickedSuppliers", "true");
+		mv.addObject("isAdmin", "true");
+
+		if (supplierDAO.getSupplierById(id) == null) {
+			mv.addObject("cMessage", "Supplier does not exists with id : " + id);
+			return mv;
+		} else {
+			supplierDAO.update(supplier);
+			mv.addObject("cMessage", "Supplier updated success with id : " + id);
 
 		}
 
-		return mv;
-
-	}
-
-	@GetMapping("/supplier/edit/")
-	public ModelAndView editSupplier(@RequestParam String id) {
-		ModelAndView mv = new ModelAndView("redirect:/managesuppliers");
-		
-		supplier = supplierDAO.get(id);
-		
-		httpSession.setAttribute("selectedSupplier", supplier);
-
-		return mv;
-	}
-
-	@GetMapping("/suppliers")
-	public ModelAndView getAllSuppliers() {
-		ModelAndView mv = new ModelAndView("home");
-		List<Supplier> suppliers = supplierDAO.list();
-		mv.addObject("suppliers", suppliers);
+		session.setAttribute("isAdminClickedManageSupplierEdit", "false");
+		log.debug("Ending of updateSupplier");
 		return mv;
 	}
 

@@ -1,94 +1,138 @@
 package com.niit.controller;
 
-import java.util.List;
-
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.niit.dao.CartDAO;
+import com.niit.dao.CategoryDAO;
+import com.niit.dao.ProductDAO;
+import com.niit.dao.SupplierDAO;
 import com.niit.dao.UserDAO;
-import com.niit.model.Cart;
+import com.niit.model.Category;
+import com.niit.model.Product;
+import com.niit.model.Supplier;
 import com.niit.model.User;
 
-//Annotation
+
+
 @Controller
 public class UserController {
-	
-	
-	//UserDAO - backend project
-	@Autowired
-	private UserDAO  userDAO;
+
+	private static Logger log = LoggerFactory.getLogger(UserController.class);
+
 	
 	@Autowired
-	private User user;
+	HttpSession session;
 	
 	@Autowired
-	private Cart cart;
-	
+	UserDAO userDAO;
 	@Autowired
-	private CartDAO cartDAO;
-	
+	User user;
+
 	@Autowired
-	HttpSession httpSession;
+	Category category;
+	@Autowired
+	CategoryDAO categoryDAO;
+
+	@Autowired
+	Product product;
+	@Autowired
+	ProductDAO productDAO;
+
+	@Autowired
+	SupplierDAO supplierDAO;
+	@Autowired
+	Supplier supplier;
 	
-	
-	//will send user id and password from jsp to controller
-	//it should validate the credentials
-	//it should return username ---- valid credentials
-	//it should return error message ----invalid credentials
-	
-	@PostMapping("validate")
-	public ModelAndView validate(@RequestParam("uname") String username, @RequestParam("password") String password)
-	
-	{
-		ModelAndView mv = new ModelAndView("home");
+
+	@RequestMapping("/validate")
+	public ModelAndView login(@RequestParam("id") String id, @RequestParam("password") String password) {
+
+		ModelAndView mv = new ModelAndView("/Home");
+		log.debug("Starting of the method login");
 		
-		user= userDAO.validate(username, password);
-		
-		if (user ==null)
-		{
-			mv.addObject("errorMessage", "Invalid credentials, pl try agin.");
+		log.info("You are login with id : "+id);
+		if (userDAO.validate(id, password) == true) {
+			log.debug("Valid credentials");
+			user = userDAO.get(id);
+			mv.addObject("message", "Welcome " + user.getName() + "!");
+
+			mv.addObject("categoryList", categoryDAO.list());
+			mv.addObject("category", categoryDAO);
+
+			mv.addObject("supplierList", supplierDAO.list());
+			mv.addObject("supplier", supplierDAO);
 			
-		}
-		else
-		{
-			//valid credentials.
-			//mv.addObject("welcomeMessage", "Welcome Mr./Ms " + user.getName());
-			httpSession.setAttribute("welcomeMessage", "Welcome Mr./Ms " + user.getName());
-			httpSession.setAttribute("loggedInUserID", user.getEmailID());
-			httpSession.setAttribute("isLoggedIn",true);
-			//fetch how amy products are added to the cart.
-			//this number add to httpSession.
-			List<Cart> carts = cartDAO.list(user.getEmailID());
-			httpSession.setAttribute("size", carts.size());
+			session.setAttribute("loggedInUserID", id);
+
+
 			
-			
-			httpSession.setAttribute("carts", carts);
-			
-			
-			if(user.getRole()=='A')
-			{
-				httpSession.setAttribute("isAdmin", true);
+			if (user.getRole().equals("ROLE_ADMIN")) {
+				log.debug("You are admin");
+				mv.addObject("isAdmin", "true");
+				 session.setAttribute("role", "ROLE_ADMIN");
+
+			} else {
+				log.debug("You are a customer");
+				mv.addObject("isAdmin", "false");
+				session.setAttribute("role", "ROLE_USER");
+				session.setAttribute("isUserLoggedIn", "true");
 			}
-			
+		} else {
+			log.debug("Invalid user");
+			mv.addObject("message", "invalid credentials");
 		}
-		
+		log.debug("Ending of the method login");
 		return mv;
+
+	}
+	
+	@RequestMapping("/Register")
+	public ModelAndView register(@RequestParam("uEmail") String email, @RequestParam("uId") String id, @RequestParam("uPassword") String password, @RequestParam("uName") String name, @RequestParam("uCountry") String country, @RequestParam("uAddress") String address, @RequestParam("uContact") String contact) {
+
+		ModelAndView mv = new ModelAndView("/Home");
+		log.debug("Starting of the method register");
+		log.debug("Assigning values");
 		
+		user.setEmail(email);
+		user.setId(id);
+		user.setName(name);
+		user.setPassword(password);
+		user.setContact(contact);
+		user.setCountry(country);
+		user.setAddress(address);
+		user.setRole("ROLE_USER");
+		
+		
+		log.info("You are signing up with username : "+id);
+		
+		if (userDAO.save(user) == true) {
+			log.debug("saving credentials");
+			user = userDAO.get(id);
+			mv.addObject("message", "Welcome " + user.getName() + "! Please Login to Continue");
+
+			mv.addObject("categoryList", categoryDAO.list());
+			mv.addObject("category", categoryDAO);
+
+			mv.addObject("supplierList", supplierDAO.list());
+			mv.addObject("supplier", supplierDAO);
+			
+
+			
+		} else {
+			log.debug("Error");
+			mv.addObject("message", "invalid credentials");
+		}
+		log.debug("Ending of the method login");
+		return mv;
+
 	}
 
 }
-
-
-
-
-
-
-
-

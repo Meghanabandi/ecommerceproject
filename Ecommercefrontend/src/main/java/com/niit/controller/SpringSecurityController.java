@@ -1,7 +1,5 @@
 package com.niit.controller;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -27,166 +25,127 @@ import com.niit.model.Product;
 import com.niit.model.Supplier;
 
 
+
 @Controller
 public class SpringSecurityController {
 
 	public static Logger log = LoggerFactory.getLogger(SpringSecurityController.class);
 
 	@Autowired
-	private CartDAO cartDAO;
-
-	@Autowired
-	private Cart cart;
-
-	@Autowired
 	private HttpSession session;
-	
+
 	@Autowired
 	private CategoryDAO categoryDAO;
-
 	@Autowired
 	private Category category;
 
 	@Autowired
 	private SupplierDAO supplierDAO;
-
 	@Autowired
 	private Supplier supplier;
 
 	@Autowired
-	private Product product;
-	
-	@Autowired
 	private ProductDAO productDAO;
-	
 
-	// authentication-failure-forward-url="/loginError"
+	@Autowired
+	private Product product;
+
+	@Autowired
+	private CartDAO cartDAO;
+
+	@Autowired
+	private Cart myCart;
+
 	@RequestMapping(value = "/loginError", method = RequestMethod.GET)
 	public String loginError(Model model) {
 		log.debug("Starting of the method loginError");
-		model.addAttribute("errorMessage", "Invalid Credentials.  Please try again.");
-		//model.addAttribute("invalidCredentials", "true");
+		session.setAttribute("errorLoginMessage", "Invalid Credentials.  Please try again.");
 		log.debug("Ending of the method loginError");
-		return "home";
+		return "redirect:/Login";
 
 	}
 
-	// <security:access-denied-handler error-page="/accessDenied" />
 	@RequestMapping(value = "/accessDenied", method = RequestMethod.GET)
 	public String accessDenied(Model model) {
 		log.debug("Starting of the method accessDenied");
 		model.addAttribute("errorMessage", "You are not authorized to access this page");
 
 		log.debug("Ending of the method accessDenied");
-		return "home";
+		return "Home";
 
 	}
-	// <security:form-login authentication-success-forward-url="/success"/>
-	/*
-	 * @RequestMapping("/success") public ModelAndView successForwardURL() {
-	 * log.debug("Starting of the method successForwardURL"); ModelAndView mv =
-	 * new ModelAndView("home");
-	 * 
-	 * Authentication auth =
-	 * SecurityContextHolder.getContext().getAuthentication(); String
-	 * loggedInUserid = auth.getName(); Collection<GrantedAuthority> authorities
-	 * = (Collection<GrantedAuthority>) auth.getAuthorities(); if
-	 * (authorities.contains("A")) { mv.addObject("isAdmin", "true");
-	 * log.debug("You are Admin"); } else { log.debug("You are not  Admin");
-	 * mv.addObject("isAdmin", "false"); // cart = cartDAO.list(userID);
-	 * mv.addObject("cart", cart); // Fetch the cart list based on user ID
-	 * List<Cart> cartList = cartDAO.list(loggedInUserid);
-	 * mv.addObject("cartList", cartList); mv.addObject("cartSize",
-	 * cartList.size()); }
-	 * 
-	 * log.debug("Ending of the method successForwardURL"); return mv;
-	 * 
-	 * }
-	 */
-/**
- * If we are using spring-security, this method is going to execute after login
- * @param request
- * @param response
- * @return
- * @throws Exception
- */
-	//@RequestMapping(value = "validate", method = RequestMethod.GET)
-	@RequestMapping(value = "checkRole", method = RequestMethod.GET)
+
+	@RequestMapping(value = "/checkRole", method = RequestMethod.GET)
 	public ModelAndView checkRole(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		log.debug("starting of the method validate");
-		ModelAndView mv = new ModelAndView("home");
-		// session = request.getSession(true);
+		ModelAndView mv = new ModelAndView("Home");
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+		mv.addObject("categoryList", categoryDAO.list());
+		mv.addObject("category", category);
+
+		mv.addObject("supplierList", supplierDAO.list());
+		mv.addObject("supplier", supplier);
+		
+		mv.addObject("productList", productDAO.list());
+		mv.addObject("product", product);
+		
+		
 		String userID = auth.getName();
 		session.setAttribute("loggedInUser", userID);
+		session.setAttribute("loggedInUserID", userID);
 
-		if (request.isUserInRole("A")) {
-
+		if (request.isUserInRole("ROLE_ADMIN")) {
+			log.debug("You are admin");
+			mv.addObject("isAdmin", "true");
+			session.setAttribute("role", "ROLE_ADMIN");
 			session.setAttribute("isAdmin", true);
+			mv.addObject("isUserAtHomePage", "false");
 
 		} else {
 
+			log.debug("You are a customer");
 			session.setAttribute("isAdmin", false);
-			
-			session.setAttribute("cart", cart);
-			// Fetch the cart list based on user ID
-			List<Cart> cartList = cartDAO.list(userID);
-			session.setAttribute("cartList", cartList);
-			session.setAttribute("cartSize", cartList.size());
-			//session.setAttribute("totalAmount", cartDAO.getTotalAmount(userID));
-
+			session.setAttribute("isUserLoggedIn", "true");
+			session.setAttribute("myCart", myCart);
+			mv.addObject("isAdmin", "false");
+			session.setAttribute("role", "ROLE_USER");
+			session.setAttribute("isUserLoggedIn", "true");
+			session.setAttribute("loggedInUserID",userID);
+			String loggedInUserID = (String) session.getAttribute("loggedInUserID");
+			int cartSize = cartDAO.list(loggedInUserID).size();
+			session.setAttribute("cartSize", cartSize);
+			mv.addObject("isUserAtHomePage", "true");
 			
 
 		}
+		String loggedInUserID = (String) session.getAttribute("loggedInUserID");
+		mv.addObject("Username", loggedInUserID);
 		log.debug("Ending of the method validate");
 		return mv;
 	}
-	
-	
+
 	@RequestMapping("/secure_logout")
-	public ModelAndView secureLogout()
-	{
-		//what you attach to session at the time login need to remove.
+	public ModelAndView secureLogout() {
 		
-		//session.removeAttribute("loggedInUserID");
 		session.invalidate();
+
+		ModelAndView mv = new ModelAndView("redirect:/Login");
+
 		
-		ModelAndView mv = new ModelAndView("Home");
-		
-		//After logout also use should able to browse the categories and products
-		//as we invalidated the session, need to load these data again.
-		
+
 		session.setAttribute("category", category); // domain object names
 		session.setAttribute("product", product);
 		session.setAttribute("supplier", supplier);
-		
-		
+
 		session.setAttribute("categoryList", categoryDAO.list());
-		
+
 		session.setAttribute("supplierList", supplierDAO.list());
-		
+
 		session.setAttribute("productList", productDAO.list());
-		
-		
-		//OR Simpley remove only one attribute from the session.
-		
-		//session.removeAttribute("loggedInUser"); // you no need to load categoriees,suppliers and products
-	
+
 		return mv;
-		
+
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 
 }

@@ -16,9 +16,7 @@ ${selectedProduct.id}
 product name: <input type="text" disabled="disabled" name="productName" value ="${selectedProduct.name}"> <br>
 price <input type="text" disabled="disabled" name="price" value="${selectedProduct.price}"> <br>
 Quantity : <input type="text" name="quantity" > <br>
-
 Description : ${selectedProduct.description} <br>
-
 <input type="submit" value="Add to Cart">
 </form> --%>
 
@@ -29,7 +27,7 @@ product name: ${selectedProduct.name} <br>
 price : ${selectedProduct.price} <br>
 Description : ${selectedProduct.description} <br>
 
-<a href="cart/add/${selectedProduct.id}">Add to Cart</a>
+<a href="cart/add/${selectedProduct.name}">Add to Cart</a>
 
 
 
