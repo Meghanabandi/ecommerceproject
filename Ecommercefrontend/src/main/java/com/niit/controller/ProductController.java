@@ -1,6 +1,5 @@
 package com.niit.controller;
 
-import java.io.File;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
@@ -9,11 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
@@ -22,190 +23,155 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.niit.dao.CategoryDAO;
 import com.niit.dao.ProductDAO;
 import com.niit.dao.SupplierDAO;
+import com.niit.model.Category;
 import com.niit.model.Product;
+import com.niit.model.Supplier;
 import com.niit.util.FileUtil;
+
+
+
+
 
 @Controller
 public class ProductController {
 
+	private static Logger log = LoggerFactory.getLogger(ProductController.class);
 
-	// we need to call ProductDAO methods
-	// get,save,update,delete,list
-
-	// 1. inject the ProductDAO and Product
 	@Autowired
-	private ProductDAO productDAO;
+	ProductDAO productDAO;
+
+	@Autowired
+	Product product;
+
+	@Autowired
+	SupplierDAO supplierDAO;
+
+	@Autowired
+	Supplier supplier;
+
+	@Autowired
+	CategoryDAO categoryDAO;
+
+	@Autowired
+	Category category;
+
+	@Autowired
+	HttpSession session;
+
+	private String path = "//MidasTouchFrontend//src//main//webapp//resources//img";
 	
-	@Autowired
-	private CategoryDAO categoryDAO;
+	@PostMapping("/manage-product-add")
+	public String addPorduct(@ModelAttribute("product") Product product, @RequestParam("image") MultipartFile file,
+			Model model) {
+		log.debug("Starting of method addProduct");
+		Category category =categoryDAO.getCategoryByName(product.getCategory().getName());
+		Supplier supplier = supplierDAO.getSupplierByName(product.getSupplier().getName());
 
-	
-	@Autowired
-	private SupplierDAO supplierDAO;
-
-
-	@Autowired
-	private Product product;
-
-	@Autowired
-	HttpSession httpSession;
-	
-	@Autowired
-	FileUtil fileUtil;
-	Logger log = LoggerFactory.getLogger(ProductController.class);
-	
-	//private static final String imageDirectory = "ShoppingCartImages";
-	//private static String rootPath = System.getProperty("catalina.home");
-
-
-
-/*	@GetMapping("/product/get/{id}")
-	public ModelAndView getProduct(@PathVariable("id") String id)
-	{
-		product = productDAO.get(id);
+		product.setCategory(category);
+		product.setCategory_id(category.getId());
 		
+		product.setSupplier(supplier);
+		product.setSupplier_id(supplier.getId());
+		
+		product.setId(Util.removeComman(product.getId()));
+		ProductDAO.saveOrUpdate(product);
+
+		FileUtil.upload(path, file, product.getId() + ".jpeg");
+
+		model.addAttribute("isAdminClickedProducts", "true");
+		model.addAttribute("isAdmin", "true");
+
+		model.addAttribute("productList", this.productDAO.list());
+		model.addAttribute("product", new Product());
+		model.addAttribute("categoryList", this.categoryDAO.list());
+		model.addAttribute("category", new Category());
+		log.debug("Ending of the method add Product");
+		return "Home";
+	}
+
+	@RequestMapping("/manageProducts")
+	public String manageProducts(Model model) {
+		log.debug("Starting of the method manageProducts");
+		model.addAttribute("isAdminClickedProducts", "true");
+		model.addAttribute("isAdmin", "true");
+		model.addAttribute("product", product);
+		model.addAttribute("productList", productDAO.list());
+		model.addAttribute("supplier", supplier);
+		model.addAttribute("supplierList", supplierDAO.list());
+		model.addAttribute("category", category);
+		model.addAttribute("categoryList", categoryDAO.list());
+		session.setAttribute("isUserLoggedIn", "false");
+		log.debug("Ending of the method manageProducts");
+		return "Home";
+	}
+	
+	@RequestMapping("/viewProduct")
+	public String viewProductHome(Model model) {
+		model.addAttribute("isUserSelectedProduct", "true");
+		String loggedInUserID = (String) session.getAttribute("loggedInUserID");
+		model.addAttribute("Username", loggedInUserID);
+		return "Home";
+		
+	}
+	
+	@RequestMapping("/viewProduct/{id}")
+	public String viewProduct(@PathVariable("id") String id, Model model) {
+		session.setAttribute("selectedProduct", productDAO.getProductById(id));
+		return "redirect:/viewProduct";
+	}
+
+	@RequestMapping("/manage-product-delete/{id}")
+	public String deleteProduct(@PathVariable("id") String id, Model model) {
+		log.debug("Starting of the method deleteProduct");
+		try {
+			productDAO.delete(id);
+			model.addAttribute("message", "Successfully deleted");
+		} catch (Exception e) {
+			model.addAttribute("message", e.getMessage());
+			e.printStackTrace();
+		}
+		log.debug("ending of method deleteProduct");
+		return "redirect:/manageProducts";
+
+	}
+
+	
+	@RequestMapping("/manage-product-edit/{id}")
+	public String editProduct(@PathVariable("id") String id, Model model) {
+		log.debug("Starting of the method editProduct");
+		product = productDAO.getProductById(id);
+		model.addAttribute("product", product);
+		log.debug("Ending of the method editProduct");
+		return "redirect:/manageProducts";
+	}
+
+	@RequestMapping("/manage-product-get/{id}")
+	public ModelAndView getSelectedProduct(@PathVariable("id") String id, RedirectAttributes redirectAttributes) {
+		log.debug("Starting of the method getSelectedProduct");
 		ModelAndView mv = new ModelAndView("redirect:/");
-		mv.addObject("selectedproduct", product);
-		mv.addObject("isUserSelectedProduct", true);
-		
-		mv.addObject("selectedProductImage", 
-				rootPath +File.separator +imageDirectory +File.separator +id + ".PNG");
-		
-		return mv;
-	}*/
-	
-	//first selected product and second selected product
-	//are appending in the URL - and hence getting 404
-	//http://localhost:8080/shoppingcart/product/get/prd001  - 1st
-	//http://localhost:8080/shoppingcart/product/get/prd001/product/get/prd003  - 1st
-	// Get select product details
-	@GetMapping("/product/get/{id}")
-		public ModelAndView getSelectedProduct(@PathVariable("id") String id, RedirectAttributes redirectAttributes) {
-			
-			ModelAndView mv = new ModelAndView("redirect:/");
-			redirectAttributes.addFlashAttribute("selectedProduct",  productDAO.get(id));
-			redirectAttributes.addFlashAttribute("isUserSelectedProduct",  true);
-		//	redirectAttributes.addFlashAttribute("productID", rootPath +File.separator +imageDirectory +File.separator +id + ".PNG");
-			return mv;
-
-		}
-	
-	
-
-	@PostMapping("/product/save/")
-	public ModelAndView saveProduct(@RequestParam("id") String id,
-			@RequestParam("name") String name,
-			@RequestParam("description") String description,
-			@RequestParam("price") String price,
-			@RequestParam("categoryID") String categoryID,
-			@RequestParam("supplierID") String supplierID,
-			@RequestParam("file") MultipartFile file
-			
-			) {
-
-		ModelAndView mv = new ModelAndView("redirect:/manageproducts");
-		product.setId(id);
-		product.setName(name);
-		product.setDescription(description);
-		price = price.replace(",","");
-		product.setPrice(Integer.parseInt(price));
-		//product.setCategory(categoryDAO.get(categoryID));
-		//product.setSupplier(supplierDAO.get(supplierID));
-		product.setCategoryId(categoryID);
-		product.setSupplierId(supplierID);
-		if (productDAO.save(product)) {
-			mv.addObject("productSuccessMessage", "The product created successfully");
-			// call upload image method
-			if(fileUtil.fileCopyNIO(file, id +".PNG"))
-			{
-				mv.addObject("uploadMessage", "product image successfully updated");
-			}
-			else
-			{
-				mv.addObject("uploadMessage", "Coulod not upload image");
-			}
-		} else {
-			mv.addObject("productErrorMessage", "Could not able to create product.  please contact admin");
-		}
-		return mv;
-
-	}
-
-	@PutMapping("/product/update/")
-	public ModelAndView updateProduct(@ModelAttribute Product product) {
-		// navigate to home page
-		ModelAndView mv = new ModelAndView("home");
-
-		// call save method of productDAO
-		if (productDAO.update(product) == true) {
-			// add success message
-			mv.addObject("successMessage", "The product updated successfully");
-		} else {
-			// add failure message
-			mv.addObject("errorMessage", "Could not update the product.");
-
-		}
-		return mv;
-
-	}
-
-	@GetMapping("/product/delete")
-	public ModelAndView deleteProduct(@RequestParam String id) {
-		System.out.println("going to delete product : " + id);
-		// navigate to home page
-		ModelAndView mv = new ModelAndView("redirect:/manageproducts");
-		// we supposed to fetch the latest categories
-		// and add to httpSession
-		// based on id, fetch the details from productDAO
-		if (productDAO.delete(id) == true) {
-			// add success message
-			mv.addObject("successMessage", "The product deleted successfully");
-
-		} else {
-			// add failure message
-			mv.addObject("errorMessage", "Could not delete the product.");
-
-		}
-
-		return mv;
-
-	}
-
-	@GetMapping("/product/edit")
-	public ModelAndView editProduct(@RequestParam String id) {
-		ModelAndView mv = new ModelAndView("redirect:/manageproducts");
-		// based on product id fetch product details.
-		product = productDAO.get(id);
-		// mv.addObject("selectedProduct", product);
-		httpSession.setAttribute("selectedProduct", product);
-
+		redirectAttributes.addFlashAttribute("selectedProduct", productDAO.getProductById(id));
+		log.debug("ending of method getSelectedProduct");
 		return mv;
 	}
-
-	@GetMapping("/products")
-	public ModelAndView getAllCategories() {
-		ModelAndView mv = new ModelAndView("home");
-		List<Product> categories = productDAO.list();
-		mv.addObject("products", categories);
-		return mv;
-	}
-	@GetMapping("search")
-	public ModelAndView searchProduct(@RequestParam("searchString") String searchString)
-	{
-		ModelAndView mv = new ModelAndView("home");
-		List<Product> products =  productDAO.search(searchString);
-		mv.addObject("products", products);
-		mv.addObject("isUserSelectedProduct", true);
-		log.info("Number of products with search string " +searchString +  " is/are : " + products.size());
-		return mv;
-		
+	
+	@RequestMapping("/showProductByCategory/{category_id}")
+	public String showProductByCategory(@PathVariable("category_id") String category_id, Model model){
+			session.setAttribute("selectedCategoryProducts", productDAO.getAllProductsByCategoryId(category_id));
+			session.setAttribute("product",product);
+			model.addAttribute("isUserClickedProductByCategory", "true");
+			String loggedInUserID = (String) session.getAttribute("loggedInUserID");
+			model.addAttribute("Username", loggedInUserID);
+		return "redirect:/productByCategory";
 	}
 	
-	
+	@RequestMapping("/productByCategory")
+	public String productByCategory(Model model){
+		model.addAttribute("isUserClickedProductByCategory", "true");
+		String loggedInUserID = (String) session.getAttribute("loggedInUserID");
+		model.addAttribute("Username", loggedInUserID);
+		return "Home";
 
-
-	
-	
+	}
 	
 
 }
